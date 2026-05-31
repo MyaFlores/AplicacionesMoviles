@@ -13,27 +13,27 @@
     </ion-card-header>
 
     <ion-card-content>  
-      <!-- Campo TÍTULO -->
+      <!-- Agregar el nombre de la tarea -->
       <ion-item lines="full">
-        <ion-label position="stacked">Título</ion-label>
+        <ion-label position="stacked">Titulo</ion-label>
         <ion-input 
           [(ngModel)]="newTaskStr" 
-          placeholder="Ej: Hacer la despensa" 
+          placeholder="Ingresa el titulo de la tarea" 
           (keyup.enter)="addTask()"
           clearInput="true">
         </ion-input>
       </ion-item>
 
-      <!-- Campo DESCRIPCIÓN -->
+      <!-- Agregar descripcion de la tarea-->
       <ion-item lines="full">
         <ion-label position="stacked">Descripcion</ion-label>
         <ion-input 
           [(ngModel)]="newTaskDesc" 
-          placeholder="Ingrese una descripción (opcional)">
+          placeholder="Ingrese una descripcion (opcional)">
         </ion-input>
       </ion-item>
 
-      <!-- Campo PRIORIDAD -->
+      <!-- Agregar la prioridad de la tarea -->
      <ion-item lines="full" (click)="abrirSelectorPrioridad()">
         <ion-label position="stacked">Prioridad</ion-label>
         <ion-text class="prioridad-valor">

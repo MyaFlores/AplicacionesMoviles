@@ -169,7 +169,7 @@ getPrioridadColor(prioridad: string): string {
         const tarea = this.tasks.find(task => task.id === id);
         if (tarea) {
           tarea.finalizado = !tarea.finalizado;
-          const estado = tarea.finalizado ? "pendiente" : "completada";
+          const estado = tarea.finalizado ? "completada" : "pendiente";
           this.mensajeExito = `Tarea marcada como ${estado}`;
           this.LimpiarMensaje(3000);
           this.Guardar();
