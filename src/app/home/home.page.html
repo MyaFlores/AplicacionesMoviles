@@ -1,23 +1,108 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title> Aplicacion de Tareas </ion-title>
+    <ion-title>Aplicacion de tareas - Ionic</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-item>
-    <ion-label position="stacked"> Nueva tarea </ion-label>
-    <ion-input [(ngModel)] = "newTaskStr" placeholder="Ingrese el titulo de la tarea"></ion-input>
-  </ion-item>
+<ion-content [fullscreen]="false" class="ion-padding" scroll-y="true">
 
-  <ion-button expand = "block" color="secondary" (click) = "addTask()"> Agregar tarea </ion-button>
+  <!-- Agregar tarea -->
+  <ion-card class="form-card">
+    <ion-card-header>
+      <ion-card-title>Agregar nueva tarea</ion-card-title>
+    </ion-card-header>
 
-  <ion-list>
-    @for(task of tasks; track task.titulo){
-      <ion-item>
-        <ion-label> {{task.titulo}} </ion-label>
+    <ion-card-content>  
+      <!-- Campo TÍTULO -->
+      <ion-item lines="full">
+        <ion-label position="stacked">Título</ion-label>
+        <ion-input 
+          [(ngModel)]="newTaskStr" 
+          placeholder="Ej: Hacer la despensa" 
+          (keyup.enter)="addTask()"
+          clearInput="true">
+        </ion-input>
       </ion-item>
-    }
-  </ion-list>
+
+      <!-- Campo DESCRIPCIÓN -->
+      <ion-item lines="full">
+        <ion-label position="stacked">Descripcion</ion-label>
+        <ion-input 
+          [(ngModel)]="newTaskDesc" 
+          placeholder="Ingrese una descripción (opcional)">
+        </ion-input>
+      </ion-item>
+
+      <!-- Campo PRIORIDAD -->
+     <ion-item lines="full" (click)="abrirSelectorPrioridad()">
+        <ion-label position="stacked">Prioridad</ion-label>
+        <ion-text class="prioridad-valor">
+          {{ newTaskPriority }} 
+        </ion-text>
+      </ion-item>
+
+      <!-- Validaciones -->
+      <ion-text color="danger" *ngIf="mensajeError">
+        <p class="mensaje">{{ mensajeError }}</p>
+      </ion-text>
+      <ion-text color="success" *ngIf="mensajeExito">
+        <p class="mensaje">{{ mensajeExito }}</p>
+      </ion-text>
+
+      <!-- Botón -->
+      <ion-button expand="block" color="secondary" (click)="addTask()" [disabled]="!newTaskStr" class="btn-agregar">
+        Agregar Tarea
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Lista de tareas -->
+  <ion-card class="list-card">
+    <ion-card-header>
+      <ion-card-title>Lista de tareas</ion-card-title>
+      <ion-card-subtitle>Total: {{ tasks.length }} tareas</ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content class="ion-no-padding">
+      <ion-list>
+        @for(task of tasks; track task.id){
+          <ion-item class="task-item">
+            <ion-label class="ion-text-wrap">
+              <h2 [class.completada]="task.finalizado">{{ task.titulo }}</h2>
+              <p *ngIf="task.descripcion" class="descripcion-texto">{{ task.descripcion }}</p>
+
+              <div class="badges-container">
+                <ion-badge [color]="task.finalizado ? 'success' : 'warning'">
+                  {{ task.finalizado ? '✓ Completada' : '○ Pendiente' }}
+                </ion-badge>
+
+                <ion-badge [color]="getPrioridadColor(task.prioridad || '')" class="prioridad-badge">
+                  {{ task.prioridad }}
+                </ion-badge>
+              </div>
+            </ion-label>
+
+            <ion-buttons slot="end" class="action-buttons">
+              <ion-button color="success" (click)="TareaCompletada(task.id)">
+                {{ task.finalizado ? 'Deshacer' : 'Completar' }}
+              </ion-button>
+              <ion-button color="danger" (click)="EliminarTarea(task.id)">
+                Eliminar
+              </ion-button>
+            </ion-buttons>
+          </ion-item>
+        }
+
+        @if (tasks.length === 0) {
+          <ion-item class="empty-state">
+            <ion-label class="ion-text-center">
+              <h3>¡No hay tareas!</h3>
+              <p>Agrega tu primera tarea usando el formulario superior</p>
+            </ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
 
 </ion-content>
