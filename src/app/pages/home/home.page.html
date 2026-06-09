@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title class="ion-text-center">Mi lista</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  
+  <!-- Fila para agregar tareas -->
+  <ion-item>
+    <ion-input 
+      type="text" 
+      placeholder="Ingresa una tarea..." 
+      name="task"
+      [(ngModel)]="task">
+    </ion-input>
+    <ion-button (click)="addTask()">
+      <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+    </ion-button>
+  </ion-item>
+
+  <!-- Aquí se mostrarán las tareas más adelante -->
+  
+</ion-content>
