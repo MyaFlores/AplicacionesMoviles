@@ -1,24 +1,71 @@
-<ion-header>
+<ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title class="ion-text-center">Mi lista</ion-title>
+    <ion-title class="ion-text-center">To Do List</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  
-  <!-- Fila para agregar tareas -->
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <!-- INPUT + BOTÓN -->
   <ion-item>
-    <ion-input 
-      type="text" 
-      placeholder="Ingresa una tarea..." 
-      name="task"
-      [(ngModel)]="task">
-    </ion-input>
-    <ion-button (click)="addTask()">
+    <ion-input
+      type="text"
+      placeholder="Ingresa una tarea..."
+      [(ngModel)]="newTaskStr"
+      (keyup.enter)="addTask()"
+      clearInput="true"
+    ></ion-input>
+    <ion-button slot="end" (click)="addTask()" [disabled]="!newTaskStr">
       <ion-icon slot="icon-only" name="add-outline"></ion-icon>
     </ion-button>
   </ion-item>
 
-  <!-- Aquí se mostrarán las tareas más adelante -->
-  
+  <!-- Mensajes de validación -->
+  <ion-text color="danger" *ngIf="mensajeError">
+    <p class="mensaje">{{ mensajeError }}</p>
+  </ion-text>
+  <ion-text color="success" *ngIf="mensajeExito">
+    <p class="mensaje">{{ mensajeExito }}</p>
+  </ion-text>
+
+  <!-- LISTA DE TAREAS -->
+  <ion-list>
+    <ion-reorder-group [disabled]="false" (ionItemReorder)="actualizarPosiciones($event)">
+      
+      @for(task of tasks; track task.id){
+        <ion-item>
+          <ion-label class="ion-text-wrap">
+            <span [class.completada]="task.finalizado">{{ task.titulo }}</span>
+          </ion-label>
+
+          <!-- ✅ BOTONES SIEMPRE VISIBLES -->
+          <ion-buttons slot="end">
+            <!-- Botón COMPLETAR -->
+            <ion-button color="success" (click)="TareaCompletada(task.id)">
+              <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+            </ion-button>
+
+            <!-- Botón ELIMINAR -->
+            <ion-button color="danger" (click)="deleteTask(task.id)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+
+            <!-- Ícono REORDENAR -->
+            <ion-reorder slot="end">
+              <ion-icon name="reorder-two-outline"></ion-icon>
+            </ion-reorder>
+          </ion-buttons>
+        </ion-item>
+      }
+
+      @if (tasks.length === 0) {
+        <ion-item>
+          <ion-label class="ion-text-center">
+            <p>No hay tareas. ¡Agrega una!</p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-reorder-group>
+  </ion-list>
+
 </ion-content>
