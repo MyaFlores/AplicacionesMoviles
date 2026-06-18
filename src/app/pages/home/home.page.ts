@@ -33,7 +33,6 @@ export class HomePage {
   mensajeExito: string = "";
 
   constructor(private alertService: AlertService) {
-    // Registrar iconos
     addIcons({ addOutline, trashOutline, checkmarkOutline, reorderTwoOutline });
     this.CargarLocalStorage();
   }
@@ -57,26 +56,22 @@ export class HomePage {
     return !TareaExiste;
   }
 
-  // Agregar tarea con validaciones + ALERTA DE ÉXITO
   addTask() {
     this.mensajeError = "";
     this.mensajeExito = "";
 
     const tituloLimpio = this.newTaskStr.trim();
 
-    // Validación: Título no vacío
     if (!this.NoVacio(tituloLimpio)) {
-      this.alertService.showAlert('Error',  'El título no puede estar vacío', 'Entendido');
+      this.alertService.showAlert('Error', 'El título no puede estar vacío', 'Entendido');
       return;
     }
 
-    // Validación: No duplicados
     if (!this.NoDuplicado(tituloLimpio)) {
       this.alertService.showAlert('Error', `Ya existe una tarea con el título "${tituloLimpio}"`, 'Entendido');
       return;
     }
 
-    // Crear nueva tarea
     const newTask: Task = {
       id: Date.now(),
       titulo: tituloLimpio,
@@ -88,23 +83,10 @@ export class HomePage {
     this.tasks.unshift(newTask);
     this.newTaskStr = "";
     this.Guardar();
-
-    // Alerta de éxito
     this.alertService.showAlert('Éxito', `Tarea "${tituloLimpio}" agregada`, 'OK');
   }
 
-  // Marcar como completada
-  TareaCompletada(id: number) {
-    const tarea = this.tasks.find(task => task.id === id);
-    if (tarea) {
-      tarea.finalizado = !tarea.finalizado;
-      this.Guardar();
-      const estado = tarea.finalizado ? 'completada' : 'pendiente';
-      this.alertService.showAlert('Estado', `Tarea "${tarea.titulo}" marcada como ${estado}`, 'OK');
-    }
-  }
-
-  // Eliminar tarea con confirmación
+  //ELIMINAR TAREA (con confirmación)
   async deleteTask(id: number) {
     const tarea = this.tasks.find(task => task.id === id);
     if (!tarea) return;
@@ -122,12 +104,22 @@ export class HomePage {
     );
   }
 
-  //Ordenamiento de tareas
+  // COMPLETAR TAREA
+  TareaCompletada(id: number) {
+    const tarea = this.tasks.find(task => task.id === id);
+    if (tarea) {
+      tarea.finalizado = !tarea.finalizado;
+      this.Guardar();
+      const estado = tarea.finalizado ? 'completada' : 'pendiente';
+      this.alertService.showAlert('Estado', `Tarea "${tarea.titulo}" marcada como ${estado}`, 'OK');
+    }
+  }
+
+  // REORDENAR TAREAS
   actualizarPosiciones(event: any) {
     const reorderedTasks = event.detail.complete(this.tasks);
     this.tasks = reorderedTasks;
     this.Guardar();
-    console.log('Nuevo orden:', this.tasks);
   }
 
   Guardar() {
@@ -141,12 +133,5 @@ export class HomePage {
     } else {
       this.cargarTareasIniciales();
     }
-  }
-
-  private LimpiarMensaje(segundos: number) {
-    setTimeout(() => {
-      this.mensajeError = "";
-      this.mensajeExito = "";
-    }, segundos);
   }
 }

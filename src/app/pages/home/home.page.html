@@ -28,34 +28,39 @@
     <p class="mensaje">{{ mensajeExito }}</p>
   </ion-text>
 
-  <!-- LISTA DE TAREAS -->
+  <!-- LISTA DE TAREAS CON DESLIZAMIENTO -->
   <ion-list>
     <ion-reorder-group [disabled]="false" (ionItemReorder)="actualizarPosiciones($event)">
       
       @for(task of tasks; track task.id){
-        <ion-item>
-          <ion-label class="ion-text-wrap">
-            <span [class.completada]="task.finalizado">{{ task.titulo }}</span>
-          </ion-label>
+        <!-- ✅ ION-ITEM-SLIDING: Permite deslizar para eliminar -->
+        <ion-item-sliding #slidingItem>
+          
+          <ion-item>
+            <ion-label class="ion-text-wrap">
+              <span [class.completada]="task.finalizado">{{ task.titulo }}</span>
+            </ion-label>
 
-          <!-- ✅ BOTONES SIEMPRE VISIBLES -->
-          <ion-buttons slot="end">
-            <!-- Botón COMPLETAR -->
-            <ion-button color="success" (click)="TareaCompletada(task.id)">
-              <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
-            </ion-button>
+            <ion-buttons slot="end">
+              <!-- Botón COMPLETAR (siempre visible) -->
+              <ion-button color="success" (click)="TareaCompletada(task.id)">
+                <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+              </ion-button>
 
-            <!-- Botón ELIMINAR -->
-            <ion-button color="danger" (click)="deleteTask(task.id)">
+              <!-- Ícono REORDENAR -->
+              <ion-reorder slot="end">
+                <ion-icon name="reorder-two-outline"></ion-icon>
+              </ion-reorder>
+            </ion-buttons>
+          </ion-item>
+
+          <ion-item-options side="end">
+            <ion-item-option color="danger" (click)="deleteTask(task.id)">
               <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-            </ion-button>
+            </ion-item-option>
+          </ion-item-options>
 
-            <!-- Ícono REORDENAR -->
-            <ion-reorder slot="end">
-              <ion-icon name="reorder-two-outline"></ion-icon>
-            </ion-reorder>
-          </ion-buttons>
-        </ion-item>
+        </ion-item-sliding>
       }
 
       @if (tasks.length === 0) {
