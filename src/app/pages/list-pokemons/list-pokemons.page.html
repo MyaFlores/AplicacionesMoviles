@@ -1,0 +1,28 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title class="ion-text-center">PokeDex</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+    <ion-text color="primary">
+      <p>Cargando Pokémon...</p>
+    </ion-text>
+  </div>
+
+  <ion-text color="danger" *ngIf="errorMessage">
+    <p class="ion-padding">{{ errorMessage }}</p>
+  </ion-text>
+
+  <ion-list>
+    <ion-item *ngFor="let pokemon of pokemonList" [routerLink]="['/detail-pokemon', pokemon.name]">
+      <ion-label>
+        <h2>{{ pokemon.name | titlecase }}</h2>
+      </ion-label>
+      <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+    </ion-item>
+  </ion-list>
+
+</ion-content>
