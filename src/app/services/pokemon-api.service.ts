@@ -1,10 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators'; //Para manejar efectos secundarios
+import { Observable } from 'rxjs'; // 👈 Importar Observable
 import { IPokemon } from '../interfaces/pokemon.interface';
 
-// Interfaz para la respuesta de la lista
 export interface PokemonListResponse {
   results: { name: string; url: string }[];
   count: number;
@@ -16,63 +14,128 @@ export interface PokemonListResponse {
   providedIn: 'root'
 })
 export class PokemonApiService {
-  // 👇 1. Variable de solo lectura para la URL base
   private readonly baseUrl = 'https://pokeapi.co/api/v2';
-  
-  // 👇 2. Variables para almacenar las URLs de paginación
   private nextUrl: string | null = null;
   private prevUrl: string | null = null;
 
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
-  // Método para obtener la lista inicial o una página específica
+  // Método para obtener la lista base (devuelve Observable)
   getPokemonList(limit: number = 20, offset: number = 0): Observable<PokemonListResponse> {
     const url = `${this.baseUrl}/pokemon?limit=${limit}&offset=${offset}`;
-    return this.http.get<PokemonListResponse>(url)
-      .pipe(
-        tap(response => this.updatePaginationUrls(response)) // 👈 3. Actualizar las URLs al recibir la respuesta
-      );
+    return this.http.get<PokemonListResponse>(url);
   }
 
-  // Método para obtener la siguiente página
-  getNextPage(): Observable<PokemonListResponse> | null {
+  // 👇 getPokemons con Promesa (corregido)
+  getPokemons(limit: number = 20, offset: number = 0): Promise<IPokemon[]> | null {
+    this.resetPagination();
+
+    return new Promise((resolve, reject) => {
+      this.getPokemonList(limit, offset).subscribe({
+        next: (response: PokemonListResponse) => {
+          this.updatePaginationUrls(response);
+          
+          const detailPromises = response.results.map(pokemon =>
+            this.http.get<IPokemon>(pokemon.url).toPromise()
+          );
+
+          Promise.all(detailPromises)
+            .then((pokemonDetails: (IPokemon | undefined)[]) => {
+              const validPokemons = pokemonDetails.filter(
+                (p): p is IPokemon => p !== undefined
+              );
+              resolve(validPokemons);
+            })
+            .catch((error: any) => reject(error));
+        },
+        error: (error: any) => reject(error) // 👈 Agregar tipo any
+      });
+    });
+  }
+
+  // 👇 getNextPageWithDetails (corregido)
+  getNextPageWithDetails(): Promise<IPokemon[]> | null {
     if (!this.nextUrl) {
       console.warn('No hay siguiente página disponible.');
       return null;
     }
-    return this.http.get<PokemonListResponse>(this.nextUrl)
-      .pipe(
-        tap(response => this.updatePaginationUrls(response))
-      );
+
+    return new Promise((resolve, reject) => {
+      // 👈 Usar non-null assertion (!) ya que validamos que no es null
+      this.http.get<PokemonListResponse>(this.nextUrl!).subscribe({
+        next: (response: PokemonListResponse) => {
+          this.updatePaginationUrls(response);
+          
+          const detailPromises = response.results.map(pokemon =>
+            this.http.get<IPokemon>(pokemon.url).toPromise()
+          );
+
+          Promise.all(detailPromises)
+            .then((pokemonDetails: (IPokemon | undefined)[]) => {
+              const validPokemons = pokemonDetails.filter(
+                (p): p is IPokemon => p !== undefined
+              );
+              resolve(validPokemons);
+            })
+            .catch((error: any) => reject(error));
+        },
+        error: (error: any) => reject(error) //Agregar tipo any
+      });
+    });
   }
 
-  // Método para obtener la página anterior
-  getPrevPage(): Observable<PokemonListResponse> | null {
+  //getPrevPageWithDetails (corregido)
+  getPrevPageWithDetails(): Promise<IPokemon[]> | null {
     if (!this.prevUrl) {
       console.warn('No hay página anterior disponible.');
       return null;
     }
-    return this.http.get<PokemonListResponse>(this.prevUrl)
-      .pipe(
-        tap(response => this.updatePaginationUrls(response))
-      );
+
+    return new Promise((resolve, reject) => {
+      //Usar non-null assertion (!) ya que validamos que no es null
+      this.http.get<PokemonListResponse>(this.prevUrl!).subscribe({
+        next: (response: PokemonListResponse) => {
+          this.updatePaginationUrls(response);
+          
+          const detailPromises = response.results.map(pokemon =>
+            this.http.get<IPokemon>(pokemon.url).toPromise()
+          );
+
+          Promise.all(detailPromises)
+            .then((pokemonDetails: (IPokemon | undefined)[]) => {
+              const validPokemons = pokemonDetails.filter(
+                (p): p is IPokemon => p !== undefined
+              );
+              resolve(validPokemons);
+            })
+            .catch((error: any) => reject(error));
+        },
+        error: (error: any) => reject(error) // 👈 Agregar tipo any
+      });
+    });
   }
 
-  // Método para obtener detalles de un Pokémon específico
-  getPokemonDetail(nameOrId: string | number): Observable<IPokemon> {
-    return this.http.get<IPokemon>(`${this.baseUrl}/pokemon/${nameOrId}`);
+  // 👇 getPokemonDetail (corregido para asegurar que no devuelva undefined)
+  getPokemonDetail(nameOrId: string | number): Promise<IPokemon> {
+    return new Promise((resolve, reject) => {
+      this.http.get<IPokemon>(`${this.baseUrl}/pokemon/${nameOrId}`).subscribe({
+        next: (data: IPokemon) => {
+          resolve(data);
+        },
+        error: (error: any) => {
+          reject(error);
+        }
+      });
+    });
   }
 
-  // Método para reiniciar la paginación
-  resetPagination() {
+  resetPagination(): void {
     this.nextUrl = null;
     this.prevUrl = null;
   }
 
-  // 👇 4. Método privado para actualizar las URLs de paginación
   private updatePaginationUrls(response: PokemonListResponse): void {
     this.nextUrl = response.next;
     this.prevUrl = response.previous;
-    console.log('Paginación actualizada:', { next: this.nextUrl, prev: this.prevUrl });
   }
 }

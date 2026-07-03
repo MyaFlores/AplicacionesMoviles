@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonBackButton, IonButtons, IonText, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonChip, IonLabel, IonIcon, IonItem } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonBackButton, IonButtons, IonText, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonChip, IonLabel, IonItem } from '@ionic/angular/standalone'; // 👈 Eliminar IonIcon
 import { PokemonApiService } from '../../services/pokemon-api.service';
-import { IPokemon } from '../../interfaces/pokemon.interface';  // 👈 Importar IPokemon
+import { IPokemon } from '../../interfaces/pokemon.interface';
 
 @Component({
   selector: 'app-detail-pokemon',
@@ -12,19 +12,17 @@ import { IPokemon } from '../../interfaces/pokemon.interface';  // 👈 Importar
   imports: [
     IonHeader, IonToolbar, IonTitle, IonContent, IonBackButton, IonButtons,
     IonText, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-    IonChip, IonLabel, IonItem,
+    IonChip, IonLabel, IonItem, 
     CommonModule
   ]
 })
 export class DetailPokemonPage implements OnInit {
-  pokemon: IPokemon | null = null;  // 👈 Usar IPokemon
+  pokemon: IPokemon | null = null;
   isLoading: boolean = true;
   errorMessage: string = '';
 
-  constructor(
-    private route: ActivatedRoute,
-    private pokemonService: PokemonApiService  // 👈 Nuevo nombre
-  ) {}
+  private route = inject(ActivatedRoute);
+  private pokemonService = inject(PokemonApiService);
 
   ngOnInit() {
     const name = this.route.snapshot.paramMap.get('id');
@@ -33,21 +31,20 @@ export class DetailPokemonPage implements OnInit {
     }
   }
 
-  loadPokemonDetail(name: string) {
+  loadPokemonDetail(name: string): void {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.pokemonService.getPokemonDetail(name).subscribe({
-      next: (data: IPokemon) => {  // 👈 Usar IPokemon
+    this.pokemonService.getPokemonDetail(name)
+      .then((data: IPokemon) => {
         this.pokemon = data;
         this.isLoading = false;
-      },
-      error: (error: any) => {
+      })
+      .catch((error: any) => {
         console.error('Error:', error);
         this.errorMessage = 'Error al cargar los detalles.';
         this.isLoading = false;
-      }
-    });
+      });
   }
 
   getPokemonImage(): string {

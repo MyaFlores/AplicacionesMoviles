@@ -4,25 +4,68 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<!--Agregar color="light" para fondo blanco -->
+<ion-content [fullscreen]="true" class="ion-padding" color="light">
 
-  <div *ngIf="isLoading" class="ion-text-center ion-padding">
-    <ion-text color="primary">
-      <p>Cargando Pokémon...</p>
-    </ion-text>
+  <!-- Spinner de carga -->
+  <ion-loading
+    [isOpen]="isLoadingMore"
+    message="CARGANDO..."
+    spinner="crescent"
+    [duration]="0">
+  </ion-loading>
+
+  <!-- Mensaje de carga inicial -->
+  <div *ngIf="isLoading && pokemons.length === 0" class="ion-text-center ion-padding">
+    <ion-text color="primary"><p>Cargando Pokémon...</p></ion-text>
   </div>
 
+  <!-- Mensaje de error -->
   <ion-text color="danger" *ngIf="errorMessage">
     <p class="ion-padding">{{ errorMessage }}</p>
   </ion-text>
 
+  <!-- LISTA DE POKEMON -->
   <ion-list>
-    <ion-item *ngFor="let pokemon of pokemonList" [routerLink]="['/detail-pokemon', pokemon.name]">
+    <ion-item
+      *ngFor="let pokemon of pokemons"
+      [routerLink]="['/detail-pokemon', pokemon.name]"
+      class="pokemon-item"
+      button
+    >
+      <!-- Avatar con la imagen -->
+      <ion-avatar slot="start">
+        <img
+          [src]="pokemon.sprites.other?.['official-artwork']?.front_default || pokemon.sprites.front_default || ''"
+          [alt]="pokemon.name"
+        >
+      </ion-avatar>
+
+      <!-- Información -->
       <ion-label>
         <h2>{{ pokemon.name | titlecase }}</h2>
+        <div class="types-container">
+          <ion-badge
+            *ngFor="let type of pokemon.types"
+            [color]="getTypeColor(type.type.name)"
+            class="type-badge"
+          >
+            {{ getTypeSpanish(type.type.name) }}
+          </ion-badge>
+        </div>
       </ion-label>
-      <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+
+      <!-- Icono de navegación -->
+      <ion-icon slot="end" name="chevron-forward-outline" class="nav-icon"></ion-icon>
     </ion-item>
   </ion-list>
+
+  <!-- Botón "Cargar más" -->
+  <div class="ion-padding ion-text-center" *ngIf="hasNext">
+    <ion-button (click)="getMorePokemons()" [disabled]="isLoading" expand="block">
+      <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+      {{ isLoading ? 'Cargando...' : 'Cargar más Pokémon' }}
+    </ion-button>
+  </div>  
 
 </ion-content>
