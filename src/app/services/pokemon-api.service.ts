@@ -26,6 +26,10 @@ export class PokemonApiService {
     return this.http.get<PokemonListResponse>(url);
   }
 
+  getPokemon(nameOrId: string | number): Promise<IPokemon> {
+    return this.http.get<IPokemon>(`${this.baseUrl}/pokemon/${nameOrId}`).toPromise() as Promise<IPokemon>;
+  }
+
   // 👇 getPokemons con Promesa (corregido)
   getPokemons(limit: number = 20, offset: number = 0): Promise<IPokemon[]> | null {
     this.resetPagination();

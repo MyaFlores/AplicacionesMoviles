@@ -4,7 +4,7 @@
   </ion-toolbar>
 </ion-header>
 
-<!--Agregar color="light" para fondo blanco -->
+<!-- 👇 Mantén el color="light" para el fondo blanco -->
 <ion-content [fullscreen]="true" class="ion-padding" color="light">
 
   <!-- Spinner de carga -->
@@ -17,7 +17,7 @@
 
   <!-- Mensaje de carga inicial -->
   <div *ngIf="isLoading && pokemons.length === 0" class="ion-text-center ion-padding">
-    <ion-text color="primary"><p>Cargando Pokémon...</p></ion-text>
+    <ion-text color="primary"><p>Cargando pokemons...</p></ion-text>
   </div>
 
   <!-- Mensaje de error -->
@@ -33,7 +33,6 @@
       class="pokemon-item"
       button
     >
-      <!-- Avatar con la imagen -->
       <ion-avatar slot="start">
         <img
           [src]="pokemon.sprites.other?.['official-artwork']?.front_default || pokemon.sprites.front_default || ''"
@@ -41,7 +40,6 @@
         >
       </ion-avatar>
 
-      <!-- Información -->
       <ion-label>
         <h2>{{ pokemon.name | titlecase }}</h2>
         <div class="types-container">
@@ -55,17 +53,18 @@
         </div>
       </ion-label>
 
-      <!-- Icono de navegación -->
       <ion-icon slot="end" name="chevron-forward-outline" class="nav-icon"></ion-icon>
     </ion-item>
   </ion-list>
 
-  <!-- Botón "Cargar más" -->
-  <div class="ion-padding ion-text-center" *ngIf="hasNext">
-    <ion-button (click)="getMorePokemons()" [disabled]="isLoading" expand="block">
-      <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-      {{ isLoading ? 'Cargando...' : 'Cargar más Pokémon' }}
-    </ion-button>
-  </div>  
+  <!-- 👇 INFINITE SCROLL -->
+  <ion-infinite-scroll
+    (ionInfinite)="getMorePokemons($event)"c[threshold]="100px"
+  >
+    <ion-infinite-scroll-content
+      loadingSpinner="crescent"
+      loadingText="Cargando mas pokemons..."
+    ></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 
 </ion-content>

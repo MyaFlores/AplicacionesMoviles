@@ -1,11 +1,11 @@
- import { Component, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
   IonContent, IonHeader, IonTitle, IonToolbar,
   IonList, IonItem, IonLabel, IonAvatar, IonBadge,
   IonButton, IonButtons, IonIcon, IonLoading,
-  IonText, IonImg 
+  IonText, IonInfiniteScroll, IonInfiniteScrollContent
 } from '@ionic/angular/standalone';
 import { IPokemon } from '../../interfaces/pokemon.interface';
 import { PokemonApiService } from '../../services/pokemon-api.service';
@@ -19,7 +19,7 @@ import { PokemonApiService } from '../../services/pokemon-api.service';
     IonContent, IonHeader, IonTitle, IonToolbar,
     IonList, IonItem, IonLabel, IonAvatar, IonBadge,
     IonButton, IonButtons, IonIcon, IonLoading,
-    IonText,
+    IonText, IonInfiniteScroll, IonInfiniteScrollContent,
     CommonModule,
     RouterLink
   ]
@@ -39,55 +39,55 @@ export class ListPokemonsPage {
     this.loadInitialPokemons();
   }
 
- // 👇 Método para traducir tipos al español
-getTypeSpanish(type: string): string {
-  const types: { [key: string]: string } = {
-    normal: 'NORMAL',
-    fire: 'FUEGO',
-    water: 'AGUA',
-    grass: 'PLANTA',
-    electric: 'ELÉCTRICO',
-    ice: 'HIELO',
-    fighting: 'LUCHA',
-    poison: 'VENENO',
-    ground: 'TIERRA',
-    flying: 'VOLADOR',
-    psychic: 'PSÍQUICO',
-    bug: 'BICHO',
-    rock: 'ROCA',
-    ghost: 'FANTASMA',
-    dark: 'SINIESTRO',
-    dragon: 'DRAGÓN',
-    steel: 'ACERO',
-    fairy: 'HADA'
-  };
-  return types[type] || type.toUpperCase();
-}
+  // Método para traducir tipos al español
+  getTypeSpanish(type: string): string {
+    const types: { [key: string]: string } = {
+      normal: 'NORMAL',
+      fire: 'FUEGO',
+      water: 'AGUA',
+      grass: 'PLANTA',
+      electric: 'ELÉCTRICO',
+      ice: 'HIELO',
+      fighting: 'LUCHA',
+      poison: 'VENENO',
+      ground: 'TIERRA',
+      flying: 'VOLADOR',
+      psychic: 'PSÍQUICO',
+      bug: 'BICHO',
+      rock: 'ROCA',
+      ghost: 'FANTASMA',
+      dark: 'SINIESTRO',
+      dragon: 'DRAGÓN',
+      steel: 'ACERO',
+      fairy: 'HADA'
+    };
+    return types[type] || type.toUpperCase();
+  }
 
-// 👇 Método para color según tipo (ya lo tienes, pero ajustamos nombres)
-getTypeColor(type: string): string {
-  const colors: { [key: string]: string } = {
-    normal: 'medium',
-    fire: 'danger',
-    water: 'primary',
-    grass: 'success',
-    electric: 'warning',
-    ice: 'light',
-    fighting: 'danger',
-    poison: 'tertiary',
-    ground: 'warning',
-    flying: 'secondary',
-    psychic: 'tertiary',
-    bug: 'success',
-    rock: 'dark',
-    ghost: 'medium',
-    dark: 'dark',
-    dragon: 'primary',
-    steel: 'medium',
-    fairy: 'secondary'
-  };
-  return colors[type] || 'medium';
-}
+  // Método para obtener color según el tipo
+  getTypeColor(type: string): string {
+    const colors: { [key: string]: string } = {
+      normal: 'medium',
+      fire: 'danger',
+      water: 'primary',
+      grass: 'success',
+      electric: 'warning',
+      ice: 'light',
+      fighting: 'danger',
+      poison: 'tertiary',
+      ground: 'warning',
+      flying: 'secondary',
+      psychic: 'tertiary',
+      bug: 'success',
+      rock: 'dark',
+      ghost: 'medium',
+      dark: 'dark',
+      dragon: 'primary',
+      steel: 'medium',
+      fairy: 'secondary'
+    };
+    return colors[type] || 'medium';
+  }
 
   loadInitialPokemons(): void {
     this.isLoading = true;
@@ -111,8 +111,15 @@ getTypeColor(type: string): string {
     }
   }
 
-  async getMorePokemons(): Promise<void> {
-    if (this.isLoading) return;
+  // 👇 Función ACTUALIZADA para recibir el evento del infinite scroll
+  async getMorePokemons(event?: any): Promise<void> {
+    if (this.isLoading) {
+      if (event) {
+        event.target.complete();
+      }
+      return;
+    }
+
     this.isLoading = true;
     this.isLoadingMore = true;
     this.errorMessage = '';
@@ -121,6 +128,9 @@ getTypeColor(type: string): string {
     if (!promisePokemons) {
       this.isLoading = false;
       this.isLoadingMore = false;
+      if (event) {
+        event.target.complete();
+      }
       return;
     }
 
@@ -130,12 +140,18 @@ getTypeColor(type: string): string {
         this.updatePaginationState();
         this.isLoading = false;
         this.isLoadingMore = false;
+        if (event) {
+          event.target.complete(); // 👈 COMPLETAR EL INFINITE SCROLL
+        }
       })
       .catch((error: any) => {
         console.error('Error loading more Pokémon:', error);
         this.errorMessage = 'Error al cargar más Pokémon.';
         this.isLoading = false;
         this.isLoadingMore = false;
+        if (event) {
+          event.target.complete();
+        }
       });
   }
 

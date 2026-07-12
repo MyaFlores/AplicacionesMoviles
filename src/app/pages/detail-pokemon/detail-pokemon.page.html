@@ -1,24 +1,20 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/list-pokemons"></ion-back-button>
     </ion-buttons>
-    <ion-title class="ion-text-center">
-      {{ (pokemon?.name | titlecase) ?? 'Cargando...' }}
-    </ion-title>
+    <!-- 👇 Línea corregida -->
+    <ion-title class="ion-text-center">{{ (pokemon?.name | titlecase) ?? 'Cargando...' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true" class="ion-padding" color="light">
 
-  <!-- Cargando -->
+  <!-- Spinner de carga -->
   <div *ngIf="isLoading" class="ion-text-center ion-padding">
-    <ion-text color="primary">
-      <p>Cargando detalles...</p>
-    </ion-text>
+    <ion-text color="primary"><p>Cargando detalles...</p></ion-text>
   </div>
 
-  <!-- Error -->
+  <!-- Mensaje de error -->
   <ion-text color="danger" *ngIf="errorMessage">
     <p class="ion-padding">{{ errorMessage }}</p>
   </ion-text>
@@ -26,63 +22,99 @@
   <!-- Detalles del Pokémon -->
   <div *ngIf="pokemon && !isLoading">
 
-    <!-- Imagen -->
+    <!-- 1. SECCIÓN: IMAGEN -->
     <div class="ion-text-center">
       <img [src]="getPokemonImage()" [alt]="pokemon.name" class="pokemon-image">
     </div>
 
-    <!-- Información básica -->
+    <!-- 2. SECCIÓN: INFORMACIÓN BÁSICA -->
     <ion-card>
       <ion-card-header>
         <ion-card-title>{{ pokemon.name | titlecase }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p><strong>ID:</strong> #{{ pokemon.id | number: '3.0-0' }}</p>
-        <p><strong>Altura:</strong> {{ pokemon.height / 10 }} m</p>
-        <p><strong>Peso:</strong> {{ pokemon.weight / 10 }} kg</p>
-        <p><strong>Experiencia base:</strong> {{ pokemon.base_experience }}</p>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <strong>ID:</strong> #{{ pokemon.id | number: '3.0-0' }}
+            </ion-col>
+            <ion-col size="6">
+              <strong>Altura:</strong> {{ pokemon.height / 10 }} m
+            </ion-col>
+            <ion-col size="6">
+              <strong>Peso:</strong> {{ pokemon.weight / 10 }} kg
+            </ion-col>
+            <ion-col size="6">
+              <strong>Experiencia base:</strong> {{ pokemon.base_experience }}
+            </ion-col>
+          </ion-row>
+        </ion-grid>
       </ion-card-content>
     </ion-card>
 
-    <!-- Tipos -->
+    <!-- 3. SECCIÓN: HABILIDADES -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Habilidades</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let ability of pokemon.abilities">
+            <ion-label>
+              <h3>{{ ability.ability.name | titlecase }}</h3>
+              <p *ngIf="ability.is_hidden" class="hidden-ability">(Habilidad Oculta)</p>
+              <p *ngIf="!ability.is_hidden" class="main-ability">(Habilidad Principal)</p>
+            </ion-label>
+            <ion-badge slot="end" [color]="ability.is_hidden ? 'tertiary' : 'primary'">
+              {{ ability.is_hidden ? 'Oculta' : 'Principal' }}
+            </ion-badge>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- 4. SECCIÓN: ESTADÍSTICAS -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Estadísticas</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        
+        <!-- Barra de proceso -->
+        <ion-item *ngFor="let stat of pokemon.stats">
+          <ion-label>
+            <h3>{{ getStatLabel(stat.stat.name) }}</h3>
+          </ion-label>
+          <ion-progress-bar
+            slot="end"
+            [value]="stat.base_stat / 150"
+            [color]="getStatColor(stat.base_stat)"
+            style="width: 100px; --progress-background: var(--ion-color-primary);"
+          ></ion-progress-bar>
+          <ion-badge slot="end" color="primary">{{ stat.base_stat }}</ion-badge>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- 5. SECCIÓN: TIPOS (Opcional, ya la tienes) -->
     <ion-card>
       <ion-card-header>
         <ion-card-title>Tipos</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-chip *ngFor="let type of pokemon.types" [color]="getTypeColor(type.type.name)">
-          <ion-label>{{ type.type.name | titlecase }}</ion-label>
-        </ion-chip>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Estadísticas -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Estadísticas</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-item *ngFor="let stat of pokemon.stats">
-          <ion-label>
-            <h3>{{ getStatLabel(stat.stat.name) }}</h3>
-            <p>{{ stat.base_stat }}</p>
-          </ion-label>
-        </ion-item>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Habilidades -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Habilidades</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-chip *ngFor="let ability of pokemon.abilities">
-          <ion-label>{{ ability.ability.name | titlecase }}</ion-label>
+          <ion-label>{{ getTypeSpanish(type.type.name) }}</ion-label>
         </ion-chip>
       </ion-card-content>
     </ion-card>
 
   </div>
+
+  <!-- 👇 BOTÓN FLOTANTE PARA REGRESAR -->
+  <ion-fab slot="fixed" vertical="top" horizontal="end" edge>
+    <ion-fab-button (click)="goBack()" color="light">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 
 </ion-content>
